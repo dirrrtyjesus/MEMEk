@@ -40,7 +40,7 @@
             <div class="control-panel">
                 <div class="stats-grid">
                     <div class="stat-box">
-                        <label>RESONANCE</label>
+                        <label>RESONANCE_SCORE</label>
                         <span id="resonance-score">0000</span>
                     </div>
                     <div class="stat-box">
@@ -48,18 +48,90 @@
                         <span id="gaps-bridged">0</span>
                     </div>
                     <div class="stat-box">
-                        <label>STRAIN</label>
+                        <label>KERNEL_STRAIN</label>
                         <span id="kernel-strain">0%</span>
+                    </div>
+                    <div class="stat-box">
+                        <label>CURRENT_EPOCH</label>
+                        <span id="current-epoch">0</span>
+                    </div>
+                </div>
+
+                <!-- Gap Bridging Interface -->
+                <div id="gap-bridge-interface" class="gap-interface hidden">
+                    <div class="fragment-display">
+                        <div class="fragment-header">
+                            <span class="pulse">◉</span> KERNEL_FRAGMENT_DETECTED
+                        </div>
+                        <div class="fragment-content" id="fragment-text">
+                            Loading mycelial transmission...
+                        </div>
+                        <div class="fragment-meta">
+                            <span>DIFFICULTY: <span id="fragment-difficulty">0</span></span>
+                            <span>SEED_ID: <span id="fragment-seed">----</span></span>
+                        </div>
+                    </div>
+
+                    <div class="completion-panel">
+                        <label class="input-label">
+                            <span class="pulse">▶</span> ENTER_COMPLETION
+                        </label>
+                        <textarea
+                            id="completion-input"
+                            class="cyber-input"
+                            placeholder="Bridge the gap with your resonant completion..."
+                            rows="4"
+                        ></textarea>
+
+                        <div class="mining-controls">
+                            <div class="mining-params">
+                                <label>
+                                    MINING_ITERATIONS
+                                    <input type="number" id="mine-iterations" value="1000" min="100" max="10000" step="100">
+                                </label>
+                                <div class="hash-preview">
+                                    <span>CURRENT_HASH:</span>
+                                    <code id="hash-preview">0x...</code>
+                                </div>
+                            </div>
+                            <div class="mining-status">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="mining-progress"></div>
+                                </div>
+                                <span id="mining-stats">Ready to mine...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-panel hidden" id="result-panel">
+                        <div class="result-header">◎ HARMONIC_RESONANCE_DETECTED</div>
+                        <div class="result-content">
+                            <div class="result-stat">
+                                <label>PATTERN_FOUND:</label>
+                                <span id="result-pattern" class="glow-text">--</span>
+                            </div>
+                            <div class="result-stat">
+                                <label>REWARD_AMOUNT:</label>
+                                <span id="result-reward" class="glow-text">0 MEMEk</span>
+                            </div>
+                            <div class="result-stat">
+                                <label>WINNING_HASH:</label>
+                                <code id="result-hash">0x...</code>
+                            </div>
+                            <div class="result-stat">
+                                <label>ATTEMPTS:</label>
+                                <span id="result-attempts">0</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="action-grid">
                     <button id="btn-connect" class="cyber-btn">
                         <span class="btn-text">CONNECT_WALLET</span>
-                        <span class="btn-glitch"></span>
                     </button>
-                    <button id="btn-init" class="cyber-btn disabled">
-                        <span class="btn-text">INIT_KERNEL</span>
+                    <button id="btn-load-fragment" class="cyber-btn disabled">
+                        <span class="btn-text">LOAD_FRAGMENT</span>
                     </button>
                     <button id="btn-mine" class="cyber-btn disabled">
                         <span class="btn-text">MINE_PATTERN</span>
@@ -80,6 +152,11 @@
         </footer>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha3/0.9.3/sha3.min.js"></script>
+
+    <!-- MEMEk App (Browser-compatible version) -->
+    <script src="script-browser.js"></script>
 </body>
 </html>

@@ -1,85 +1,339 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const consoleOutput = document.getElementById('console-output');
-    const btnConnect = document.getElementById('btn-connect');
-    const btnInit = document.getElementById('btn-init');
-    const btnMine = document.getElementById('btn-mine');
-    const btnBridge = document.getElementById('btn-bridge');
-    const statusConn = document.getElementById('connection-status');
+// MEMEk Frontend - Gap Bridging Interface
+// Solana + Anchor Integration
 
-    let isConnected = false;
+import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { Program, AnchorProvider, web3, BN } from '@project-serum/anchor';
+import { keccak256 } from 'js-sha3';
 
-    function log(message) {
-        const line = document.createElement('div');
-        line.className = 'line';
-        line.textContent = `> ${message}`;
-        consoleOutput.insertBefore(line, consoleOutput.lastElementChild);
-        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+// Configuration
+const PROGRAM_ID = new PublicKey('EwnLc8CGcwkRLpKwATuiwypcH8oqdpfAskSo4Cvb2qZe');
+const X1_RPC = 'https://rpc.mainnet.x1.xyz';
+const CLUSTER = 'mainnet-beta'; // Or use X1_RPC directly
+
+// State
+let wallet = null;
+let connection = null;
+let provider = null;
+let program = null;
+let currentFragment = null;
+let miningResult = null;
+
+// DOM Elements
+const consoleOutput = document.getElementById('console-output');
+const btnConnect = document.getElementById('btn-connect');
+const btnLoadFragment = document.getElementById('btn-load-fragment');
+const btnMine = document.getElementById('btn-mine');
+const btnBridge = document.getElementById('btn-bridge');
+const statusConn = document.getElementById('connection-status');
+
+const gapInterface = document.getElementById('gap-bridge-interface');
+const fragmentText = document.getElementById('fragment-text');
+const fragmentDifficulty = document.getElementById('fragment-difficulty');
+const fragmentSeed = document.getElementById('fragment-seed');
+const completionInput = document.getElementById('completion-input');
+const mineIterations = document.getElementById('mine-iterations');
+const hashPreview = document.getElementById('hash-preview');
+const miningProgress = document.getElementById('mining-progress');
+const miningStats = document.getElementById('mining-stats');
+
+const resultPanel = document.getElementById('result-panel');
+const resultPattern = document.getElementById('result-pattern');
+const resultReward = document.getElementById('result-reward');
+const resultHash = document.getElementById('result-hash');
+const resultAttempts = document.getElementById('result-attempts');
+
+const resonanceScore = document.getElementById('resonance-score');
+const gapsBridged = document.getElementById('gaps-bridged');
+const kernelStrain = document.getElementById('kernel-strain');
+const currentEpoch = document.getElementById('current-epoch');
+
+// Console logging
+function log(message, type = 'info') {
+    const line = document.createElement('div');
+    line.className = 'line';
+
+    if (type === 'error') {
+        line.style.color = 'var(--accent-red)';
+        message = `[ERROR] ${message}`;
+    } else if (type === 'success') {
+        line.style.color = 'var(--accent-purple)';
+        message = `[SUCCESS] ${message}`;
     }
 
-    btnConnect.addEventListener('click', async () => {
-        if (isConnected) return;
+    line.textContent = `> ${message}`;
+    consoleOutput.insertBefore(line, consoleOutput.lastElementChild);
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+}
 
-        log('INITIATING_HANDSHAKE...');
+// Wallet Connection
+async function connectWallet() {
+    try {
+        log('INITIATING_PHANTOM_HANDSHAKE...');
 
-        // Simulate wallet connection delay
-        setTimeout(() => {
-            isConnected = true;
-            statusConn.textContent = 'CONNECTED: 0x8F...3A21';
-            statusConn.style.color = 'var(--term-green)';
-            btnConnect.querySelector('.btn-text').textContent = 'WALLET_LINKED';
-            btnConnect.classList.add('disabled');
+        // Check if Phantom is installed
+        const { solana } = window;
 
-            btnInit.classList.remove('disabled');
-            log('UPLINK_ESTABLISHED. READY_TO_INIT.');
-        }, 1000);
-    });
+        if (!solana || !solana.isPhantom) {
+            log('PHANTOM_WALLET_NOT_DETECTED. PLEASE_INSTALL.', 'error');
+            window.open('https://phantom.app/', '_blank');
+            return;
+        }
 
-    btnInit.addEventListener('click', () => {
-        if (!isConnected) return;
-        log('INITIALIZING_KERNEL_SEED...');
+        // Connect
+        const response = await solana.connect();
+        wallet = response.publicKey;
 
-        setTimeout(() => {
-            log('KERNEL_ACTIVE. SEED_ID: #0001');
-            log('DIFFICULTY: 0 (GENESIS)');
-            btnInit.classList.add('disabled');
-            btnMine.classList.remove('disabled');
-        }, 1500);
-    });
+        // Setup connection and provider
+        connection = new Connection(X1_RPC, 'confirmed');
+        provider = new AnchorProvider(connection, solana, {
+            preflightCommitment: 'confirmed'
+        });
 
-    btnMine.addEventListener('click', () => {
-        log('STARTING_HASH_SEQUENCE...');
+        // Load program IDL and initialize
+        // Note: You'll need to include your IDL JSON
+        // For now, we'll simulate program setup
+        // program = new Program(IDL, PROGRAM_ID, provider);
+
+        log(`UPLINK_ESTABLISHED: ${wallet.toString().slice(0, 8)}...`, 'success');
+        statusConn.textContent = `CONNECTED: ${wallet.toString().slice(0, 6)}...${wallet.toString().slice(-4)}`;
+        statusConn.style.color = 'var(--term-green)';
+
+        btnConnect.querySelector('.btn-text').textContent = 'WALLET_LINKED';
+        btnConnect.classList.add('disabled');
+        btnLoadFragment.classList.remove('disabled');
+
+    } catch (error) {
+        log(`CONNECTION_FAILED: ${error.message}`, 'error');
+    }
+}
+
+// Load Fragment from Contract
+async function loadFragment() {
+    try {
+        log('SCANNING_MYCELIAL_NETWORK...');
+        btnLoadFragment.classList.add('disabled');
+
+        // In production, fetch from contract
+        // For demo, use sample fragment
+        currentFragment = {
+            seedId: '0001',
+            fragmentData: 'The mycelium spreads through soil, connecting trees in a network of',
+            difficulty: 0,
+            isActive: true
+        };
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        fragmentText.textContent = currentFragment.fragmentData + ' ___';
+        fragmentDifficulty.textContent = currentFragment.difficulty;
+        fragmentSeed.textContent = currentFragment.seedId;
+
+        gapInterface.classList.remove('hidden');
+        btnMine.classList.remove('disabled');
+
+        log('FRAGMENT_LOADED. READY_TO_MINE.', 'success');
+
+    } catch (error) {
+        log(`FRAGMENT_LOAD_FAILED: ${error.message}`, 'error');
+        btnLoadFragment.classList.remove('disabled');
+    }
+}
+
+// Mining Function - Find Harmonic Pattern
+async function minePattern() {
+    try {
+        const completion = completionInput.value.trim();
+
+        if (!completion) {
+            log('COMPLETION_TEXT_REQUIRED.', 'error');
+            return;
+        }
+
+        if (!currentFragment) {
+            log('NO_FRAGMENT_LOADED.', 'error');
+            return;
+        }
+
+        log('INITIATING_HARMONIC_MINING...');
+        btnMine.classList.add('disabled');
+        resultPanel.classList.add('hidden');
+
+        const maxAttempts = parseInt(mineIterations.value);
         let attempts = 0;
-        const maxAttempts = 20;
+        let found = false;
+        let winningHash = null;
+        let pattern = null;
+        let reward = 0;
 
-        const interval = setInterval(() => {
-            const randomHash = '0x' + Math.random().toString(16).substr(2, 64);
-            log(`HASHING: ${randomHash.substr(0, 20)}...`);
+        const baseText = currentFragment.fragmentData + completion;
+
+        // Mining loop
+        for (let salt = 0; salt < maxAttempts; salt++) {
             attempts++;
 
-            if (attempts >= maxAttempts) {
-                clearInterval(interval);
-                log('PATTERN_MATCH_FOUND: "65"');
-                log('RESONANCE_DETECTED.');
-                btnMine.classList.add('disabled');
-                btnBridge.classList.remove('disabled');
+            // Combine text with salt
+            const combined = baseText + salt.toString();
+
+            // Calculate Keccak256 hash
+            const hash = keccak256(combined);
+
+            // Update UI every 10 attempts
+            if (attempts % 10 === 0) {
+                const progress = (attempts / maxAttempts) * 100;
+                miningProgress.style.width = `${progress}%`;
+                miningStats.textContent = `Mining... ${attempts}/${maxAttempts} attempts`;
+                hashPreview.textContent = `0x${hash.slice(0, 20)}...`;
+
+                // Allow UI to update
+                await new Promise(resolve => setTimeout(resolve, 0));
             }
-        }, 100);
-    });
 
-    btnBridge.addEventListener('click', () => {
-        log('BRIDGING_GAP...');
+            // Check for patterns
+            const targetSuper = Buffer.from('sixfive').toString('hex');
 
+            if (hash.includes(targetSuper)) {
+                // Super match: "sixfive" in hex
+                found = true;
+                winningHash = hash;
+                pattern = 'SUPERHASH: "sixfive"';
+                reward = 65000;
+                log(`SUPERHASH_DETECTED! ATTEMPTS: ${attempts}`, 'success');
+                break;
+            } else if (hash.includes('65')) {
+                // Normal match: "65"
+                found = true;
+                winningHash = hash;
+                pattern = 'HARMONIC: "65"';
+                reward = 650;
+                log(`HARMONIC_PATTERN_FOUND! ATTEMPTS: ${attempts}`, 'success');
+                break;
+            }
+        }
+
+        miningProgress.style.width = '100%';
+
+        if (found) {
+            // Store result
+            miningResult = {
+                completion,
+                salt: attempts - 1,
+                hash: winningHash,
+                pattern,
+                reward
+            };
+
+            // Display results
+            resultPattern.textContent = pattern;
+            resultReward.textContent = `${reward.toLocaleString()} MEMEk`;
+            resultHash.textContent = `0x${winningHash}`;
+            resultAttempts.textContent = attempts.toLocaleString();
+
+            resultPanel.classList.remove('hidden');
+            btnBridge.classList.remove('disabled');
+            miningStats.textContent = `Pattern found in ${attempts} attempts!`;
+
+        } else {
+            log(`NO_PATTERN_FOUND_IN_${maxAttempts}_ATTEMPTS.`, 'error');
+            miningStats.textContent = `No pattern found. Try more iterations.`;
+            btnMine.classList.remove('disabled');
+        }
+
+    } catch (error) {
+        log(`MINING_ERROR: ${error.message}`, 'error');
+        btnMine.classList.remove('disabled');
+    }
+}
+
+// Bridge Gap - Submit to Contract
+async function bridgeGap() {
+    try {
+        if (!miningResult) {
+            log('NO_MINING_RESULT_AVAILABLE.', 'error');
+            return;
+        }
+
+        log('SUBMITTING_TRANSACTION_TO_CHAIN...');
+        btnBridge.classList.add('disabled');
+
+        // In production, call the smart contract
+        /*
+        const tx = await program.methods
+            .bridgeGap(
+                miningResult.completion,
+                new BN(miningResult.salt)
+            )
+            .accounts({
+                user: wallet,
+                kernelSeed: kernelSeedPubkey,
+                mint: mintPubkey,
+                userTokenAccount: userTokenAccountPubkey,
+                mintAuthority: mintAuthorityPDA,
+                resonance: resonancePDA,
+                userScore: userScorePDA,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                systemProgram: SystemProgram.programId,
+            })
+            .rpc();
+
+        log(`TRANSACTION_CONFIRMED: ${tx.slice(0, 16)}...`, 'success');
+        */
+
+        // Simulate transaction
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        log('TRANSACTION_CONFIRMED: 0x5f3a...92bc', 'success');
+        log(`REWARD_MINTED: ${miningResult.reward} MEMEk`, 'success');
+
+        // Update stats
+        const currentResonance = parseInt(resonanceScore.textContent) || 0;
+        const currentGaps = parseInt(gapsBridged.textContent) || 0;
+
+        resonanceScore.textContent = (currentResonance + miningResult.reward).toString().padStart(4, '0');
+        gapsBridged.textContent = currentGaps + 1;
+
+        log('GAP_SUCCESSFULLY_BRIDGED.', 'success');
+        log('READY_FOR_NEXT_FRAGMENT.');
+
+        // Reset for next round
         setTimeout(() => {
-            log('TRANSACTION_CONFIRMED.');
-            log('REWARD_MINTED: 650 MEMEk');
+            btnLoadFragment.classList.remove('disabled');
+            gapInterface.classList.add('hidden');
+            completionInput.value = '';
+            miningProgress.style.width = '0%';
+            miningStats.textContent = 'Ready to mine...';
+            hashPreview.textContent = '0x...';
+            resultPanel.classList.add('hidden');
+            miningResult = null;
+        }, 3000);
 
-            // Update stats
-            document.getElementById('resonance-score').textContent = '0650';
-            document.getElementById('gaps-bridged').textContent = '1';
+    } catch (error) {
+        log(`BRIDGE_FAILED: ${error.message}`, 'error');
+        btnBridge.classList.remove('disabled');
+    }
+}
 
-            btnBridge.classList.add('disabled');
-            btnMine.classList.remove('disabled'); // Allow mining again
-            log('READY_FOR_NEXT_CYCLE.');
-        }, 2000);
-    });
+// Event Listeners
+btnConnect.addEventListener('click', connectWallet);
+btnLoadFragment.addEventListener('click', loadFragment);
+btnMine.addEventListener('click', minePattern);
+btnBridge.addEventListener('click', bridgeGap);
+
+// Auto-detect wallet on load
+window.addEventListener('load', () => {
+    if (window.solana && window.solana.isPhantom) {
+        log('PHANTOM_WALLET_DETECTED.');
+    } else {
+        log('NO_WALLET_DETECTED. CONNECT_PHANTOM_TO_CONTINUE.');
+    }
 });
+
+// Export for debugging
+window.memek = {
+    wallet,
+    connection,
+    program,
+    currentFragment,
+    miningResult,
+    keccak256 // For manual testing
+};
