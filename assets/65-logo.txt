@@ -1,0 +1,168 @@
+ASCII Logo Concepts for $65 Token
+
+===========================================
+Concept 1: Terminal Style
+===========================================
+
+     ██████╗ ███████╗
+    ██╔════╝ ██╔════╝
+    ███████╗ ███████╗
+    ██╔═══██╗╚════██║
+    ╚██████╔╝███████║
+     ╚═════╝ ╚══════╝
+
+    THE MINOR THIRD
+    ═══════════════
+
+
+===========================================
+Concept 2: Ratio Display
+===========================================
+
+    ╔═══════════════════╗
+    ║                   ║
+    ║       6 : 5       ║
+    ║                   ║
+    ║   MINOR THIRD     ║
+    ║                   ║
+    ║   IT'S NOT 67     ║
+    ║                   ║
+    ╚═══════════════════╝
+
+
+===========================================
+Concept 3: Harmonic Wave
+===========================================
+
+    ～～～～～～～～～～～～～～～
+         ▲           ▲
+        ╱ ╲         ╱ ╲
+       ╱   ╲       ╱   ╲
+      ╱     ╲     ╱     ╲
+     ╱       ╲   ╱       ╲
+    ╱         ╲ ╱         ╲
+   ╱           ▼           ╲
+
+         65 | 65 | 65
+
+    ～～～～～～～～～～～～～～～
+
+
+===========================================
+Concept 4: The Choice
+===========================================
+
+    ┌────────────┐     ┌────────────┐
+    │            │     │            │
+    │     65     │  >  │     67     │
+    │            │     │            │
+    │  ✓ BASED   │     │  ✗ NGMI    │
+    │            │     │            │
+    └────────────┘     └────────────┘
+
+    HARMONY            DISSONANCE
+
+
+===========================================
+Concept 5: Minimal Glitch
+===========================================
+
+    ██████╗ ███████╗
+    ██╔═══██╗██╔════╝
+    ██║   ██║███████╗
+    ██║▄▄ ██║╚════██║
+    ╚██████╔╝███████║
+     ╚══▀▀═╝ ╚══════╝
+
+    not 67 | not 66 | not 64
+
+    just 65
+
+
+===========================================
+Concept 6: Mycelial Network
+===========================================
+
+          ╱╲    ╱╲
+         ╱  ╲  ╱  ╲
+        ╱ 65 ╲╱ 65 ╲
+       ╱      ╱╲     ╲
+      ╱   65 ╱  ╲ 65  ╲
+     ╱──────╱ 65 ╲─────╲
+
+    MYCELIAL RESONANCE
+    HARMONIC NETWORK
+
+
+===========================================
+Color Schemes (for designers)
+===========================================
+
+Primary Palette:
+- Background: #0a0a0a (deep black)
+- Primary: #0f0 (terminal green)
+- Accent 1: #b026ff (purple)
+- Accent 2: #ff003c (red, for "not 67")
+
+Secondary Palette:
+- Mycelial Gold: #ffd700
+- Harmonic Blue: #00d4ff
+- Fungal Brown: #8b4513
+
+Text:
+- Font: Roboto Mono, Courier New, or similar monospace
+- Primary messages: Green (#0f0)
+- Error/Not 67: Red (#ff003c)
+- Special: Purple (#b026ff)
+
+
+===========================================
+Profile Picture Concept (1:1 ratio)
+===========================================
+
+Black background
+Large "65" in center (terminal green, glowing)
+Purple circle border
+Text around border: "6:5 MINOR THIRD"
+Bottom: Small "not 67" in red
+
+
+===========================================
+Banner Concept (3:1 ratio)
+===========================================
+
+Left side: Glitching "65" effect
+Center: "THE MINOR THIRD | IT'S NOT 67"
+Right side: Harmonic wave visualization
+Background: Dark with subtle mycelial network pattern
+Color: Terminal green on black with purple accents
+
+
+===========================================
+Sticker Text (for Telegram/Discord)
+===========================================
+
+- "IT'S 65"
+- "NOT 67"
+- "6:5 GANG"
+- "HARMONIC ✓"
+- "MINOR THIRD MAXI"
+- "67 NGMI"
+- "RESONANCE ONLY"
+- "PYTHAGORAS APPROVED"
+
+
+===========================================
+GIF Animation Concept
+===========================================
+
+Frame 1: "Is it 67?"
+Frame 2: "NO"
+Frame 3: "Is it 66?"
+Frame 4: "NO"
+Frame 5: "Is it 64?"
+Frame 6: "NO"
+Frame 7: "It's 65" (glowing, terminal effect)
+Frame 8: "Always has been" (astronaut meme style)
+
+Loop back to frame 1
