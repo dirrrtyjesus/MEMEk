@@ -4,6 +4,19 @@
 (function() {
     'use strict';
 
+    // Verify dependencies loaded
+    if (typeof keccak_256 === 'undefined') {
+        console.error('ERROR: js-sha3 library not loaded. Please check CDN connection.');
+        alert('Failed to load crypto library. Please refresh the page.');
+        return;
+    }
+
+    if (typeof solanaWeb3 === 'undefined') {
+        console.error('ERROR: @solana/web3.js library not loaded. Please check CDN connection.');
+        alert('Failed to load Solana library. Please refresh the page.');
+        return;
+    }
+
     // Configuration
     const PROGRAM_ID_STR = 'EwnLc8CGcwkRLpKwATuiwypcH8oqdpfAskSo4Cvb2qZe';
     const X1_RPC = 'https://rpc.mainnet.x1.xyz';
@@ -186,7 +199,8 @@
                 const combined = baseText + salt.toString();
 
                 // Calculate Keccak256 hash using sha3 library
-                const hash = sha3.keccak256(combined);
+                // js-sha3 exposes keccak_256 globally
+                const hash = keccak_256(combined);
 
                 // Update UI every 10 attempts
                 if (attempts % 10 === 0) {
@@ -273,7 +287,7 @@
             // Simulate transaction
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            const txId = '0x' + sha3.keccak256(Date.now().toString()).slice(0, 16);
+            const txId = '0x' + keccak_256(Date.now().toString()).slice(0, 16);
             log(`TRANSACTION_CONFIRMED: ${txId}...`, 'success');
             log(`REWARD_MINTED: ${miningResult.reward.toLocaleString()} MEMEk`, 'success');
 
@@ -313,6 +327,11 @@
 
     // Auto-detect wallet on load
     window.addEventListener('load', () => {
+        console.log('MEMEk initialized. Dependencies:', {
+            keccak_256: typeof keccak_256,
+            solanaWeb3: typeof solanaWeb3
+        });
+
         if (window.solana && window.solana.isPhantom) {
             log('PHANTOM_WALLET_DETECTED.');
         } else {
@@ -326,6 +345,6 @@
         connection,
         currentFragment,
         miningResult,
-        sha3 // For manual testing
+        keccak_256 // For manual testing
     };
 })();
