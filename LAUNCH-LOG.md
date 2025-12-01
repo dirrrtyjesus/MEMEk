@@ -14,7 +14,7 @@
 **Ticker:** $65
 **Contract Address:** `3ni26V4GwAitUkVmwrjdRBC3htCu7GjzK2pS7b9cpump`
 **Platform:** pump.fun (Solana)
-**Creator:** $LSYVA
+**Creator:** 5L5YVAdTbGDPmuVs5ZkRLdi6usJETBdxsP9Y86QBuvdi
 
 **Links:**
 - Pump.fun: https://pump.fun/coin/3ni26V4GwAitUkVmwrjdRBC3htCu7GjzK2pS7b9cpump
