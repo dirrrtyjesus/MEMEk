@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEMEk // TERMINAL</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="scanline"></div>
+    <div class="overlay"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="MEMEk_PROTOCOL">MEMEk_PROTOCOL</h1>
+            <div class="status-bar">
+                <span id="connection-status">DISCONNECTED</span>
+                <span id="network-status">:: NET: X1_MAINNET</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="title">kernel_link.exe</span>
+                </div>
+                <div class="terminal-content" id="console-output">
+                    <div class="line">> SYSTEM_INIT...</div>
+                    <div class="line">> WAITING_FOR_UPLINK...</div>
+                    <div class="line blink">_</div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <label>RESONANCE</label>
+                        <span id="resonance-score">0000</span>
+                    </div>
+                    <div class="stat-box">
+                        <label>GAPS_BRIDGED</label>
+                        <span id="gaps-bridged">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <label>STRAIN</label>
+                        <span id="kernel-strain">0%</span>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <button id="btn-connect" class="cyber-btn">
+                        <span class="btn-text">CONNECT_WALLET</span>
+                        <span class="btn-glitch"></span>
+                    </button>
+                    <button id="btn-init" class="cyber-btn disabled">
+                        <span class="btn-text">INIT_KERNEL</span>
+                    </button>
+                    <button id="btn-mine" class="cyber-btn disabled">
+                        <span class="btn-text">MINE_PATTERN</span>
+                    </button>
+                    <button id="btn-bridge" class="cyber-btn disabled">
+                        <span class="btn-text">BRIDGE_GAP</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="ticker">
+                <span>:: LATEST_HASH: 0x...0000 ::</span>
+                <span>:: EVOLUTION_EPOCH: 0 ::</span>
+                <span>:: MYCELIUM_NODES: ACTIVE ::</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
