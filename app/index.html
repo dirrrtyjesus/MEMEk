@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,10 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="scanline"></div>
     <div class="overlay"></div>
-    
+
     <div class="container">
         <header>
             <h1 class="glitch" data-text="MEMEk_PROTOCOL">MEMEk_PROTOCOL</h1>
@@ -76,18 +78,15 @@
                         <label class="input-label">
                             <span class="pulse">▶</span> ENTER_COMPLETION
                         </label>
-                        <textarea
-                            id="completion-input"
-                            class="cyber-input"
-                            placeholder="Bridge the gap with your resonant completion..."
-                            rows="4"
-                        ></textarea>
+                        <textarea id="completion-input" class="cyber-input"
+                            placeholder="Bridge the gap with your resonant completion..." rows="4"></textarea>
 
                         <div class="mining-controls">
                             <div class="mining-params">
                                 <label>
                                     MINING_ITERATIONS
-                                    <input type="number" id="mine-iterations" value="1000" min="100" max="10000" step="100">
+                                    <input type="number" id="mine-iterations" value="1000" min="100" max="10000"
+                                        step="100">
                                 </label>
                                 <div class="hash-preview">
                                     <span>CURRENT_HASH:</span>
@@ -128,7 +127,7 @@
 
                 <div class="action-grid">
                     <button id="btn-connect" class="cyber-btn">
-                        <span class="btn-text">CONNECT_WALLET</span>
+                        <span class="btn-text">CONNECT_SOLANA_WALLET</span>
                     </button>
                     <button id="btn-load-fragment" class="cyber-btn disabled">
                         <span class="btn-text">LOAD_FRAGMENT</span>
@@ -140,9 +139,54 @@
                         <span class="btn-text">BRIDGE_GAP</span>
                     </button>
                 </div>
+
+                <!-- VERO XIQA INTERFACE -->
+                <div class="terminal-header" style="margin-top: 2rem;">
+                    <span class="dot purple"></span>
+                    <span class="title">vero_validator.exe</span>
+                </div>
+
+                <div class="vero-panel">
+                    <div class="input-group">
+                        <label>CLAIM_TEXT:</label>
+                        <textarea id="vero-claim-input" class="cyber-input" rows="2"
+                            placeholder="State your truth..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>COHERENCE_SCALE:</label>
+                        <select id="vero-scale-select" class="cyber-input">
+                            <option value="quantum">QUANTUM</option>
+                            <option value="cellular">CELLULAR</option>
+                            <option value="network" selected>NETWORK</option>
+                            <option value="planetary">PLANETARY</option>
+                            <option value="cosmic">COSMIC</option>
+                        </select>
+                    </div>
+                    <button id="btn-submit-claim" class="cyber-btn disabled" style="width: 100%; margin-top: 1rem;">
+                        <span class="btn-text">SUBMIT_CLAIM</span>
+                    </button>
+
+                    <div id="vero-result" class="result-panel hidden">
+                        <div class="result-header" style="color: var(--accent-purple)">◈ VERIFICATION_COMPLETE</div>
+                        <div class="result-content">
+                            <div class="result-stat">
+                                <label>IS_VERO:</label>
+                                <span id="vero-status" class="glow-text">--</span>
+                            </div>
+                            <div class="result-stat">
+                                <label>COHERENCE:</label>
+                                <span id="vero-coherence">0</span>
+                            </div>
+                            <div class="result-stat">
+                                <label>CHAOS_FACTOR:</label>
+                                <span id="vero-chaos">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
-        
+
         <footer>
             <div class="ticker">
                 <span>:: LATEST_HASH: 0x...0000 ::</span>
@@ -159,4 +203,5 @@
     <!-- MEMEk App (Browser-compatible version) -->
     <script src="script-browser.js"></script>
 </body>
+
 </html>

@@ -19,10 +19,12 @@
 
     // Configuration
     const PROGRAM_ID_STR = 'EwnLc8CGcwkRLpKwATuiwypcH8oqdpfAskSo4Cvb2qZe';
+    const KERNEL_SEED_STR = '8F7wySNTc3ZYE9YCWHgbvRLsQeSPVUN3wq1431nci2xN'; // augLABS kernel
     const X1_RPC = 'https://rpc.mainnet.x1.xyz';
 
     // State
     let wallet = null;
+    let walletAdapter = null; // The wallet adapter being used
     let connection = null;
     let currentFragment = null;
     let miningResult = null;
@@ -74,32 +76,135 @@
         consoleOutput.scrollTop = consoleOutput.scrollHeight;
     }
 
+    // Detect available wallets
+    function getAvailableWallets() {
+        const wallets = [];
+
+        // Phantom
+        if (window.solana?.isPhantom) {
+            wallets.push({ name: 'Phantom', adapter: window.solana, icon: 'phantom' });
+        }
+        // Solflare
+        if (window.solflare?.isSolflare) {
+            wallets.push({ name: 'Solflare', adapter: window.solflare, icon: 'solflare' });
+        }
+        // Backpack
+        if (window.backpack?.isBackpack) {
+            wallets.push({ name: 'Backpack', adapter: window.backpack, icon: 'backpack' });
+        }
+        // Glow
+        if (window.glow?.isGlow) {
+            wallets.push({ name: 'Glow', adapter: window.glow, icon: 'glow' });
+        }
+        // Generic solana adapter (fallback for other wallets)
+        if (window.solana && !window.solana.isPhantom && wallets.length === 0) {
+            wallets.push({ name: 'Solana Wallet', adapter: window.solana, icon: 'generic' });
+        }
+
+        return wallets;
+    }
+
+    // Show wallet selection modal
+    function showWalletSelector(wallets) {
+        return new Promise((resolve) => {
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'wallet-modal';
+            modal.innerHTML = `
+                <div class="wallet-modal-content">
+                    <div class="wallet-modal-header">SELECT_WALLET</div>
+                    <div class="wallet-list">
+                        ${wallets.map((w, i) => `
+                            <button class="wallet-option cyber-btn" data-index="${i}">
+                                <span class="btn-text">${w.name.toUpperCase()}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <button class="wallet-cancel cyber-btn" style="margin-top: 1rem; width: 100%;">
+                        <span class="btn-text">CANCEL</span>
+                    </button>
+                </div>
+            `;
+
+            // Style the modal
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.85); display: flex;
+                align-items: center; justify-content: center; z-index: 9999;
+            `;
+            const content = modal.querySelector('.wallet-modal-content');
+            content.style.cssText = `
+                background: var(--bg-secondary, #1a1a2e); padding: 2rem;
+                border: 1px solid var(--term-green, #00ff41); min-width: 280px;
+            `;
+            const header = modal.querySelector('.wallet-modal-header');
+            header.style.cssText = `
+                color: var(--term-green, #00ff41); margin-bottom: 1rem;
+                font-size: 1.2rem; text-align: center;
+            `;
+            const list = modal.querySelector('.wallet-list');
+            list.style.cssText = 'display: flex; flex-direction: column; gap: 0.5rem;';
+
+            document.body.appendChild(modal);
+
+            // Handle selection
+            modal.querySelectorAll('.wallet-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.index);
+                    document.body.removeChild(modal);
+                    resolve(wallets[idx]);
+                });
+            });
+
+            modal.querySelector('.wallet-cancel').addEventListener('click', () => {
+                document.body.removeChild(modal);
+                resolve(null);
+            });
+        });
+    }
+
     // Wallet Connection
     async function connectWallet() {
         try {
-            log('INITIATING_PHANTOM_HANDSHAKE...');
+            log('SCANNING_FOR_WALLETS...');
 
-            // Check if Phantom is installed
-            const { solana } = window;
+            const wallets = getAvailableWallets();
 
-            if (!solana || !solana.isPhantom) {
-                log('PHANTOM_WALLET_NOT_DETECTED. PLEASE_INSTALL.', 'error');
-                window.open('https://phantom.app/', '_blank');
+            if (wallets.length === 0) {
+                log('NO_SOLANA_WALLET_DETECTED.', 'error');
+                log('INSTALL: PHANTOM, SOLFLARE, BACKPACK, OR GLOW', 'error');
                 return;
             }
 
+            let selectedWallet;
+            if (wallets.length === 1) {
+                selectedWallet = wallets[0];
+                log(`DETECTED: ${selectedWallet.name.toUpperCase()}`);
+            } else {
+                log(`FOUND ${wallets.length} WALLETS. SELECT_ONE...`);
+                selectedWallet = await showWalletSelector(wallets);
+                if (!selectedWallet) {
+                    log('CONNECTION_CANCELLED.', 'error');
+                    return;
+                }
+            }
+
+            log(`INITIATING_${selectedWallet.name.toUpperCase()}_HANDSHAKE...`);
+
             // Connect
-            const response = await solana.connect();
+            const response = await selectedWallet.adapter.connect();
             wallet = response.publicKey.toString();
+            walletAdapter = selectedWallet.adapter;
 
             // Setup connection
             connection = new solanaWeb3.Connection(X1_RPC, 'confirmed');
 
             log(`UPLINK_ESTABLISHED: ${wallet.slice(0, 8)}...`, 'success');
+            log(`KERNEL: ${KERNEL_SEED_STR.slice(0, 8)}...`);
             statusConn.textContent = `CONNECTED: ${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
             statusConn.style.color = 'var(--term-green)';
 
-            btnConnect.querySelector('.btn-text').textContent = 'WALLET_LINKED';
+            btnConnect.querySelector('.btn-text').textContent = `${selectedWallet.name.toUpperCase()}_LINKED`;
             btnConnect.classList.add('disabled');
             btnLoadFragment.classList.remove('disabled');
 
@@ -115,7 +220,15 @@
             btnLoadFragment.classList.add('disabled');
 
             // Sample fragments - in production, fetch from contract
+            // Current kernel: augLABS (8F7wySNTc3ZYE9YCWHgbvRLsQeSPVUN3wq1431nci2xN)
             const fragments = [
+                {
+                    seedId: '0065',
+                    fragmentData: 'augLABS',
+                    difficulty: 0,
+                    isActive: true,
+                    kernelSeed: KERNEL_SEED_STR
+                },
                 {
                     seedId: '0001',
                     fragmentData: 'The mycelium spreads through soil, connecting trees in a network of',
@@ -142,8 +255,14 @@
                 }
             ];
 
-            // Random fragment
-            currentFragment = fragments[Math.floor(Math.random() * fragments.length)];
+            // Prioritize the augLABS kernel fragment (first load), then random
+            const isFirstLoad = !sessionStorage.getItem('memek_loaded');
+            if (isFirstLoad) {
+                currentFragment = fragments[0]; // augLABS
+                sessionStorage.setItem('memek_loaded', 'true');
+            } else {
+                currentFragment = fragments[Math.floor(Math.random() * fragments.length)];
+            }
 
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -332,19 +451,24 @@
             solanaWeb3: typeof solanaWeb3
         });
 
-        if (window.solana && window.solana.isPhantom) {
-            log('PHANTOM_WALLET_DETECTED.');
+        const wallets = getAvailableWallets();
+        if (wallets.length > 0) {
+            const names = wallets.map(w => w.name.toUpperCase()).join(', ');
+            log(`WALLET(S)_DETECTED: ${names}`);
         } else {
-            log('NO_WALLET_DETECTED. CONNECT_PHANTOM_TO_CONTINUE.');
+            log('NO_WALLET_DETECTED. INSTALL_SOLANA_WALLET.');
         }
+        log(`KERNEL_SEED: ${KERNEL_SEED_STR.slice(0, 12)}...`);
     });
 
     // Export for debugging
     window.memek = {
         wallet,
+        walletAdapter,
         connection,
         currentFragment,
         miningResult,
+        kernelSeed: KERNEL_SEED_STR,
         keccak_256 // For manual testing
     };
 })();
