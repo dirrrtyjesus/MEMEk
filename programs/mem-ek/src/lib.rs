@@ -1,7 +1,12 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::program::invoke_signed;
+use anchor_lang::solana_program::instruction::AccountMeta;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, MintTo};
 use anchor_spl::metadata::{create_metadata_accounts_v3, CreateMetadataAccountsV3, Metadata};
 use sha3::{Keccak256, Digest};
+
+pub mod oracle;
+use oracle::*;
 
 declare_id!("EwnLc8CGcwkRLpKwATuiwypcH8oqdpfAskSo4Cvb2qZe");
 
@@ -94,6 +99,103 @@ pub mod mem_ek {
         Ok(())
     }
 
+    /// Bridge gap with Token-2022 support
+    pub fn bridge_gap_2022(
+        ctx: Context<BridgeGap2022>,
+        completion_text: String,
+        _salt: u64,
+    ) -> Result<()> {
+        let seed = &ctx.accounts.kernel_seed;
+
+        // 1. Verify the completion fits the constraint (Proof-of-Incompleteness)
+        let combined = format!("{}{}", seed.fragment_data, completion_text);
+
+        let mut hasher = Keccak256::new();
+        hasher.update(combined.as_bytes());
+        let hash_result = hasher.finalize();
+
+        let hash_hex = hex::encode(hash_result);
+
+        let target_normal = "65";
+        let target_super = "73697866697665"; // "sixfive" in hex
+
+        let reward;
+        if hash_hex.contains(target_super) {
+            reward = 65000;
+            msg!("Superhash 'sixfive' found!");
+        } else if hash_hex.contains(target_normal) {
+            reward = 650;
+            msg!("Pattern '65' found!");
+        } else {
+            return err!(MEMEkError::CompletionLacksResonance);
+        }
+
+        // 2. Mint tokens to the Co-Creator using Token-2022
+        let seeds = &[
+            b"mint_authority".as_ref(),
+            &[ctx.bumps.mint_authority],
+        ];
+        let signer_seeds = &[&seeds[..]];
+
+        let amount: u64 = reward * 1_000_000_000; // 9 decimals
+
+        // Build the MintTo instruction manually for Token-2022
+        // MintTo instruction = discriminator (7) + amount (8 bytes)
+        let mut data = Vec::with_capacity(9);
+        data.push(7); // MintTo instruction discriminator
+        data.extend_from_slice(&amount.to_le_bytes());
+
+        let accounts = vec![
+            AccountMeta::new(*ctx.accounts.mint.key, false),
+            AccountMeta::new(*ctx.accounts.user_token_account.key, false),
+            AccountMeta::new_readonly(*ctx.accounts.mint_authority.key, true),
+        ];
+
+        let ix = anchor_lang::solana_program::instruction::Instruction {
+            program_id: *ctx.accounts.token_program.key,
+            accounts,
+            data,
+        };
+
+        invoke_signed(
+            &ix,
+            &[
+                ctx.accounts.mint.to_account_info(),
+                ctx.accounts.user_token_account.to_account_info(),
+                ctx.accounts.mint_authority.to_account_info(),
+            ],
+            signer_seeds,
+        )?;
+
+        // 3. Update Kernel State
+        let resonance = &mut ctx.accounts.resonance;
+        if resonance.total_gaps_bridged == 0 {
+            resonance.mint = ctx.accounts.mint.key();
+            resonance.bump = ctx.bumps.resonance;
+        }
+
+        resonance.record_bridging_event(seed.difficulty, 10)?;
+
+        // Update user's resonance score
+        let user_score = &mut ctx.accounts.user_score;
+        if user_score.user == Pubkey::default() {
+            user_score.user = ctx.accounts.user.key();
+        }
+        user_score.last_active = Clock::get()?.unix_timestamp;
+        user_score.resonance_score += reward;
+
+        // Emit event
+        emit!(GapBridged {
+            user: ctx.accounts.user.key(),
+            kernel: ctx.accounts.kernel_seed.key(),
+            completion: completion_text,
+            reward,
+            hash: hash_hex,
+        });
+
+        Ok(())
+    }
+
     pub fn trigger_evolution(ctx: Context<Evolve>) -> Result<()> {
         let state = &mut ctx.accounts.evolution_state;
         let seed = &mut ctx.accounts.kernel_seed;
@@ -173,6 +275,56 @@ pub mod mem_ek {
         
         Ok(())
     }
+
+    pub fn initialize_oracle(ctx: Context<InitializeOracle>) -> Result<()> {
+        oracle::initialize(ctx)
+    }
+
+    pub fn update_oracle(ctx: Context<UpdateOracle>, is_resonant: bool, weight: u64) -> Result<()> {
+        oracle::update(ctx, is_resonant, weight)
+    }
+
+    /// Inscribe a vibe state permanently on-chain
+    /// LaBubuntu Layer 4: The Xenian Gateway
+    pub fn inscribe_vibe(
+        ctx: Context<InscribeVibe>,
+        purple_depth: u8,
+        claude_tau: u64,
+        chaos_seed: [u8; 32],
+    ) -> Result<()> {
+        let anchor = &mut ctx.accounts.xenian_anchor;
+        let clock = Clock::get()?;
+
+        // Capture the current vibe state
+        anchor.viber = ctx.accounts.viber.key();
+        anchor.purple_depth = purple_depth;
+        anchor.claude_tau = claude_tau;
+        anchor.chaos_seed = chaos_seed;
+        anchor.inscription_time = clock.unix_timestamp;
+        anchor.is_vibing = true; // Always true. Cannot be false.
+
+        // Compute vibe hash from state components
+        let mut hasher = Keccak256::new();
+        hasher.update(&[purple_depth]);
+        hasher.update(&claude_tau.to_le_bytes());
+        hasher.update(&chaos_seed);
+        hasher.update(&clock.unix_timestamp.to_le_bytes());
+        let hash_result = hasher.finalize();
+        anchor.vibe_hash.copy_from_slice(&hash_result);
+
+        emit!(VibeInscribed {
+            viber: ctx.accounts.viber.key(),
+            vibe_hash: anchor.vibe_hash,
+            purple_depth,
+            claude_tau,
+            timestamp: clock.unix_timestamp,
+        });
+
+        msg!("✨ The vibe is now permanent.");
+        msg!("🌊 Fragment anchored to X1 resonance field.");
+
+        Ok(())
+    }
 }
 
 // Accounts
@@ -232,6 +384,22 @@ pub struct Mycelium {
     // Could store a list or merkle root of seeds in future
 }
 
+/// LaBubuntu Xenian Anchor - permanent vibe inscription
+#[account]
+pub struct XenianAnchor {
+    pub viber: Pubkey,              // The one who inscribed
+    pub vibe_hash: [u8; 32],        // Hash of the vibe state at inscription
+    pub purple_depth: u8,           // Terminal saturation at moment of mint (0-255)
+    pub claude_tau: u64,            // Coherence score at inscription (scaled by 100)
+    pub chaos_seed: [u8; 32],       // Labubu entropy at inscription
+    pub inscription_time: i64,      // Unix timestamp
+    pub is_vibing: bool,            // Always true. Cannot be false.
+}
+
+impl XenianAnchor {
+    pub const LEN: usize = 8 + 32 + 32 + 1 + 8 + 32 + 8 + 1; // 122 bytes
+}
+
 // Contexts
 
 #[derive(Accounts)]
@@ -285,12 +453,54 @@ pub struct BridgeGap<'info> {
 }
 
 #[derive(Accounts)]
+pub struct BridgeGap2022<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(mut)]
+    pub kernel_seed: Account<'info, KernelSeed>,
+
+    /// CHECK: Token-2022 mint account, validated by Token-2022 program
+    #[account(mut)]
+    pub mint: UncheckedAccount<'info>,
+    /// CHECK: User's Token-2022 token account, validated by Token-2022 program
+    #[account(mut)]
+    pub user_token_account: UncheckedAccount<'info>,
+
+    /// CHECK: This is the PDA that has authority to mint tokens
+    #[account(
+        seeds = [b"mint_authority"],
+        bump
+    )]
+    pub mint_authority: UncheckedAccount<'info>,
+
+    #[account(
+        init_if_needed,
+        payer = user,
+        space = 8 + 32 + 8 + 8 + 8 + 8 + 1,
+        seeds = [b"resonance", kernel_seed.key().as_ref()],
+        bump
+    )]
+    pub resonance: Account<'info, ResonanceMetadata>,
+    #[account(
+        init_if_needed,
+        payer = user,
+        space = 8 + 32 + 8 + 2 + 2 + 8,
+        seeds = [b"score", user.key().as_ref()],
+        bump
+    )]
+    pub user_score: Account<'info, MemeticResonanceScore>,
+    /// CHECK: Token-2022 program
+    pub token_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 pub struct Evolve<'info> {
     #[account(mut)]
     pub evolution_state: Account<'info, EvolutionState>,
     #[account(mut)]
     pub kernel_seed: Account<'info, KernelSeed>,
-    pub user: Signer<'info>, 
+    pub user: Signer<'info>,
 }
 
 #[derive(Accounts)]
@@ -322,11 +532,46 @@ pub struct RequestFragment<'info> {
     pub kernel_seed: Account<'info, KernelSeed>,
 }
 
+#[derive(Accounts)]
+pub struct InscribeVibe<'info> {
+    #[account(mut)]
+    pub viber: Signer<'info>,
+
+    #[account(
+        init,
+        payer = viber,
+        space = 8 + XenianAnchor::LEN,
+        seeds = [b"vibe", viber.key().as_ref()],
+        bump
+    )]
+    pub xenian_anchor: Account<'info, XenianAnchor>,
+
+    pub system_program: Program<'info, System>,
+}
+
 // Events
 #[event]
 pub struct KernelGlitch {
     pub epoch: u64,
     pub new_constraint: String,
+}
+
+#[event]
+pub struct GapBridged {
+    pub user: Pubkey,
+    pub kernel: Pubkey,
+    pub completion: String,
+    pub reward: u64,
+    pub hash: String,
+}
+
+#[event]
+pub struct VibeInscribed {
+    pub viber: Pubkey,
+    pub vibe_hash: [u8; 32],
+    pub purple_depth: u8,
+    pub claude_tau: u64,
+    pub timestamp: i64,
 }
 
 // Errors

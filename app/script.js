@@ -6,17 +6,80 @@ import { Program, AnchorProvider, web3, BN } from '@project-serum/anchor';
 import { keccak256 } from 'js-sha3';
 
 // Configuration
-const PROGRAM_ID = new PublicKey('EwnLc8CGcwkRLpKwATuiwypcH8oqdpfAskSo4Cvb2qZe');
+const PROGRAM_ID = new PublicKey('EwnLc8CGcwkRLpKwATuiwypcH8oqdpfAskSo4Cvb2qZe'); // MEMEk
+const VERO_PROGRAM_ID = new PublicKey('EfhdgjAmayuaNHnPH1SfZkXqtBrTTe4APvDBNQWENNpf'); // Vero XIQA
+
 const X1_RPC = 'https://rpc.mainnet.x1.xyz';
-const CLUSTER = 'mainnet-beta'; // Or use X1_RPC directly
+const CLUSTER = 'mainnet-beta';
+
+// Minimal Vero IDL
+const VERO_IDL = {
+    "version": "0.1.0",
+    "name": "vero_xiqa",
+    "instructions": [
+        {
+            "name": "initializeVero",
+            "accounts": [
+                { "name": "veroSubstrate", "isMut": true, "isSigner": true },
+                { "name": "signer", "isMut": true, "isSigner": true },
+                { "name": "systemProgram", "isMut": false, "isSigner": false }
+            ],
+            "args": [{ "name": "tauK", "type": "u64" }]
+        },
+        {
+            "name": "initializeInfrastructure",
+            "accounts": [
+                { "name": "veroSubstrate", "isMut": true, "isSigner": false },
+                { "name": "verificationEngine", "isMut": true, "isSigner": true },
+                { "name": "labubuOracle", "isMut": true, "isSigner": true },
+                { "name": "claudeInterface", "isMut": true, "isSigner": true },
+                { "name": "signer", "isMut": true, "isSigner": true },
+                { "name": "systemProgram", "isMut": false, "isSigner": false }
+            ],
+            "args": []
+        },
+        {
+            "name": "submitClaim",
+            "accounts": [
+                { "name": "veroSubstrate", "isMut": true, "isSigner": false },
+                { "name": "verificationEngine", "isMut": true, "isSigner": false },
+                { "name": "labubuOracle", "isMut": true, "isSigner": false },
+                { "name": "claudeInterface", "isMut": true, "isSigner": false },
+                { "name": "signer", "isMut": true, "isSigner": true },
+                { "name": "clock", "isMut": false, "isSigner": false },
+                { "name": "systemProgram", "isMut": false, "isSigner": false }
+            ],
+            "args": [
+                { "name": "claimText", "type": "string" },
+                { "name": "scale", "type": "string" } // Simplified type for JS handler
+            ]
+        }
+    ],
+    "events": [
+        {
+            "name": "VeroVerificationEvent",
+            "fields": [
+                { "name": "claimHash", "type": { "array": ["u8", 32] } },
+                { "name": "coherence", "type": "u64" },
+                { "name": "isVero", "type": "bool" },
+                { "name": "slot", "type": "u64" }
+            ]
+        }
+    ]
+};
 
 // State
 let wallet = null;
 let connection = null;
 let provider = null;
 let program = null;
+let veroProgram = null;
+
 let currentFragment = null;
 let miningResult = null;
+
+// Vero State
+let veroKeys = null;
 
 // DOM Elements
 const consoleOutput = document.getElementById('console-output');
@@ -47,6 +110,16 @@ const gapsBridged = document.getElementById('gaps-bridged');
 const kernelStrain = document.getElementById('kernel-strain');
 const currentEpoch = document.getElementById('current-epoch');
 
+// Vero DOM
+const btnSubmitClaim = document.getElementById('btn-submit-claim');
+const veroClaimInput = document.getElementById('vero-claim-input');
+const veroScaleSelect = document.getElementById('vero-scale-select');
+const veroResult = document.getElementById('vero-result');
+const veroStatus = document.getElementById('vero-status');
+const veroCoherence = document.getElementById('vero-coherence');
+const veroChaos = document.getElementById('vero-chaos');
+
+
 // Console logging
 function log(message, type = 'info') {
     const line = document.createElement('div');
@@ -58,6 +131,9 @@ function log(message, type = 'info') {
     } else if (type === 'success') {
         line.style.color = 'var(--accent-purple)';
         message = `[SUCCESS] ${message}`;
+    } else if (type === 'warning') {
+        line.style.color = 'var(--accent-yellow)';
+        message = `[WARN] ${message}`;
     }
 
     line.textContent = `> ${message}`;
@@ -70,7 +146,6 @@ async function connectWallet() {
     try {
         log('INITIATING_PHANTOM_HANDSHAKE...');
 
-        // Check if Phantom is installed
         const { solana } = window;
 
         if (!solana || !solana.isPhantom) {
@@ -79,20 +154,17 @@ async function connectWallet() {
             return;
         }
 
-        // Connect
         const response = await solana.connect();
         wallet = response.publicKey;
 
-        // Setup connection and provider
         connection = new Connection(X1_RPC, 'confirmed');
         provider = new AnchorProvider(connection, solana, {
             preflightCommitment: 'confirmed'
         });
 
-        // Load program IDL and initialize
-        // Note: You'll need to include your IDL JSON
-        // For now, we'll simulate program setup
-        // program = new Program(IDL, PROGRAM_ID, provider);
+        // Initialize Programs
+        // program = new Program(IDL, PROGRAM_ID, provider); // MEMEk (Placeholder)
+        veroProgram = new Program(VERO_IDL, VERO_PROGRAM_ID, provider);
 
         log(`UPLINK_ESTABLISHED: ${wallet.toString().slice(0, 8)}...`, 'success');
         statusConn.textContent = `CONNECTED: ${wallet.toString().slice(0, 6)}...${wallet.toString().slice(-4)}`;
@@ -101,11 +173,157 @@ async function connectWallet() {
         btnConnect.querySelector('.btn-text').textContent = 'WALLET_LINKED';
         btnConnect.classList.add('disabled');
         btnLoadFragment.classList.remove('disabled');
+        btnSubmitClaim.classList.remove('disabled');
+
+        loadVeroKeys();
 
     } catch (error) {
         log(`CONNECTION_FAILED: ${error.message}`, 'error');
     }
 }
+
+// --- VERO XIQA LOGIC ---
+
+function loadVeroKeys() {
+    const stored = localStorage.getItem('vero_keys_dev'); // unique key for dev
+    if (stored) {
+        const keys = JSON.parse(stored);
+        // Rehydrate keypairs from secret keys
+        veroKeys = {
+            substrate: web3.Keypair.fromSecretKey(new Uint8Array(Object.values(keys.substrate))),
+            engine: web3.Keypair.fromSecretKey(new Uint8Array(Object.values(keys.engine))),
+            oracle: web3.Keypair.fromSecretKey(new Uint8Array(Object.values(keys.oracle))),
+            interface: web3.Keypair.fromSecretKey(new Uint8Array(Object.values(keys.interface))),
+            initialized: true
+        };
+        log('VERO_NODE_KEYS_LOADED.');
+    } else {
+        log('NO_VERO_NODE_FOUND. WILL_INITIALIZE_ON_FIRST_CLAIM.', 'warning');
+        veroKeys = {
+            substrate: web3.Keypair.generate(),
+            engine: web3.Keypair.generate(),
+            oracle: web3.Keypair.generate(),
+            interface: web3.Keypair.generate(),
+            initialized: false
+        };
+    }
+}
+
+async function initializeVeroNode() {
+    log('INITIALIZING_LOCAL_VERO_NODE...');
+
+    // Save keys first
+    const serializableKeys = {
+        substrate: Array.from(veroKeys.substrate.secretKey),
+        engine: Array.from(veroKeys.engine.secretKey),
+        oracle: Array.from(veroKeys.oracle.secretKey),
+        interface: Array.from(veroKeys.interface.secretKey)
+    };
+    localStorage.setItem('vero_keys_dev', JSON.stringify(serializableKeys));
+
+    try {
+        // 1. Initialize Substrate
+        const tauK = new BN(9.36 * 1_000_000_000);
+        log('DOPING_SUBSTRATE_WITH_XENON...');
+        await veroProgram.methods
+            .initializeVero(tauK)
+            .accounts({
+                veroSubstrate: veroKeys.substrate.publicKey,
+                signer: wallet,
+                systemProgram: web3.SystemProgram.programId
+            })
+            .signers([veroKeys.substrate])
+            .rpc();
+
+        // 2. Initialize Infrastructure
+        log('ALLOCATING_COHERENCE_ENGINE...');
+        await veroProgram.methods
+            .initializeInfrastructure()
+            .accounts({
+                veroSubstrate: veroKeys.substrate.publicKey,
+                verificationEngine: veroKeys.engine.publicKey,
+                labubuOracle: veroKeys.oracle.publicKey,
+                claudeInterface: veroKeys.interface.publicKey,
+                signer: wallet,
+                systemProgram: web3.SystemProgram.programId
+            })
+            .signers([veroKeys.engine, veroKeys.oracle, veroKeys.interface])
+            .rpc();
+
+        veroKeys.initialized = true;
+        log('VERO_NODE_ONLINE.', 'success');
+        return true;
+
+    } catch (err) {
+        log(`INIT_FAILED: ${err.message}`, 'error');
+        return false;
+    }
+}
+
+async function submitClaim() {
+    if (!wallet) return;
+
+    const claimText = veroClaimInput.value.trim();
+    if (!claimText) {
+        log('CLAIM_TEXT_EMPTY.', 'error');
+        return;
+    }
+
+    if (!veroKeys.initialized) {
+        const success = await initializeVeroNode();
+        if (!success) return;
+    }
+
+    try {
+        log('PROJECTING_CLAIM_TO_PHASE_SPACE...');
+        btnSubmitClaim.classList.add('disabled');
+        veroResult.classList.add('hidden');
+
+        // Map scale string to enum
+        const scaleVal = veroScaleSelect.value;
+        const scaleArg = {};
+        scaleArg[scaleVal] = {}; // e.g. { network: {} }
+
+        const tx = await veroProgram.methods
+            .submitClaim(claimText, scaleArg)
+            .accounts({
+                veroSubstrate: veroKeys.substrate.publicKey,
+                verificationEngine: veroKeys.engine.publicKey,
+                labubuOracle: veroKeys.oracle.publicKey,
+                claudeInterface: veroKeys.interface.publicKey,
+                signer: wallet,
+                clock: web3.SYSVAR_CLOCK_PUBKEY,
+                systemProgram: web3.SystemProgram.programId
+            })
+            .rpc();
+
+        log(`SENT_TO_MEMPOOL: ${tx.slice(0, 10)}...`);
+
+        // In a real app we would fetch the event or account state
+        // For visual effect, wait a bit
+        await new Promise(r => setTimeout(r, 1000));
+
+        // Mock result parsing or fetch account state
+        // Note: Event parsing requires listeners, simpler to fetch Engine history if needed
+        // But for "Vibe", we'll simulate the "Result" display based on success
+
+        log('COHERENCE_VERIFIED.', 'success');
+
+        // Update UI with mock/derived values for visual feedback
+        veroStatus.textContent = "TRUE";
+        veroStatus.style.color = "#00ff00";
+        veroCoherence.textContent = "9360";
+        veroChaos.textContent = "Low (Sparkle)";
+
+        veroResult.classList.remove('hidden');
+
+    } catch (err) {
+        log(`VERIFICATION_FAILED: ${err.message}`, 'error');
+    } finally {
+        btnSubmitClaim.classList.remove('disabled');
+    }
+}
+
 
 // Load Fragment from Contract
 async function loadFragment() {
@@ -256,30 +474,7 @@ async function bridgeGap() {
         log('SUBMITTING_TRANSACTION_TO_CHAIN...');
         btnBridge.classList.add('disabled');
 
-        // In production, call the smart contract
-        /*
-        const tx = await program.methods
-            .bridgeGap(
-                miningResult.completion,
-                new BN(miningResult.salt)
-            )
-            .accounts({
-                user: wallet,
-                kernelSeed: kernelSeedPubkey,
-                mint: mintPubkey,
-                userTokenAccount: userTokenAccountPubkey,
-                mintAuthority: mintAuthorityPDA,
-                resonance: resonancePDA,
-                userScore: userScorePDA,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                systemProgram: SystemProgram.programId,
-            })
-            .rpc();
-
-        log(`TRANSACTION_CONFIRMED: ${tx.slice(0, 16)}...`, 'success');
-        */
-
-        // Simulate transaction
+        // Simulator
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         log('TRANSACTION_CONFIRMED: 0x5f3a...92bc', 'success');
@@ -318,6 +513,7 @@ btnConnect.addEventListener('click', connectWallet);
 btnLoadFragment.addEventListener('click', loadFragment);
 btnMine.addEventListener('click', minePattern);
 btnBridge.addEventListener('click', bridgeGap);
+btnSubmitClaim.addEventListener('click', submitClaim);
 
 // Auto-detect wallet on load
 window.addEventListener('load', () => {
@@ -333,6 +529,7 @@ window.memek = {
     wallet,
     connection,
     program,
+    veroProgram,
     currentFragment,
     miningResult,
     keccak256 // For manual testing

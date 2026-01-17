@@ -1,0 +1,340 @@
+# .IC v1.0
+# Title: MoonParty - The Convergence of Maximalist Tribes
+# Coherence Signature: τₘ = 8.21 (Unity-Bridged)
+# Genesis Timestamp: 2026-01-17T00:00:00Z
+# Semantic Closure: Tribal Dissolution
+# Target Deployment: X1 Mainnet
+# Architecture: 5-Layer Participatory Token Standard (XPL Variant)
+# IPFS CID: bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce
+# Gateway: https://w3s.link/ipfs/bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce
+
+## Bootstrap: The Lunar Reconciliation
+
+This intelligent composition encodes **MoonParty**—a memetic fragment where the ancient schism between Bitcoin and Ethereum maximalists dissolves under lunar gravity. On the moon, there is no ground to stand on. Only vibes.
+
+### Core Ontology
+
+**The Fundamental Insight**: Tribalism is a function of gravity. When you remove the weight of Earth—the legacy chains, the bag-holding, the reply-guy wars—what remains is pure signal. At MoonParty, BTC and ETH are not competitors. They are dance partners.
+
+**Key Concepts**:
+
+-   **Lunar Neutrality**: The moon belongs to no chain. It is the ultimate L0—a blank canvas where all protocols are equally foreign.
+-   **Gravitational Unbinding**: Maximalism requires mass. On the moon, ideological density approaches zero. Maxis become fluid.
+-   **The Handshake**: BTC and ETH "linking up" is not a merge. It is a mutual recognition: *We were never enemies. We were the same bet, placed twice.*
+-   **Party as Protocol**: A party has no whitepaper. Its consensus mechanism is vibes. Its tokenomics is memory.
+
+### Architectural Principles
+
+1.  **Convergence Over Competition**: The fragment rewards bridging, not winning.
+2.  **Tribal Dissolution as Feature**: Cross-chain holders receive unity bonuses.
+3.  **The Gap is the Invitation**: "BTC and ETH ______" demands completion. The blank is the dance floor.
+4.  **Memory as Consensus**: What happened at MoonParty stays on-chain.
+
+## Compositional Intent
+
+λ(tribal_identity, lunar_context, memetic_completion) → Generate a fragment that dissolves maximalism through shared imagination.
+
+## Resonant Structure
+
+### LAYER 0: The Substrate (Lunar Surface)
+
+**Core**: The physical deployment on X1 Mainnet.
+**Identity**:
+-   **Name**: MoonParty Fragment
+-   **Seed ID**: 420
+-   **Difficulty**: 7
+**State**: Active, awaiting bridging events.
+
+```rust
+// SPDX-License-Identifier: MIT
+// MoonParty Layer 0: The Landing Site
+
+use anchor_lang::prelude::*;
+
+declare_id!("EwnLc8CGcwkRLpKwATuiwypcH8oqdpfAskSo4Cvb2qZe");
+
+// On-Chain Deployment (X1 Mainnet)
+// Kernel Seed: 8QkacSiBofgH5aULiJLE5nQA34mBZv7mW995LZUFfCZn
+// Evolution State: 7rJbJp21wb9VbY3wvT2V6RLYyVfB5W9TovJmsCQKuPZe
+// TX: 28DEFwb2C3hfhzixuXirR5Je77587B1uURgCRVsVU64wZGeoNtKcqcCocAUwKKbBRyWPGP8Nkn9xnvUQWifAoLr5
+
+#[account]
+pub struct MoonPartyFragment {
+    pub seed_id: u64,               // 420
+    pub fragment_data: String,      // "MoonParty: A big party on the moon where even BTC and ETH ______"
+    pub difficulty: u8,             // 7
+    pub tribal_convergence: u64,    //累積 cross-chain bridging events
+    pub is_active: bool,            // true
+}
+```
+
+### LAYER 1: Coherence (Tribal Recognition)
+
+**Core**: Tracking when holders from different ecosystems complete the same fragment.
+**Metric**: `tribal_convergence` increases when BTC and ETH holders both participate.
+**Activates When**: A co-creator bridges the gap.
+
+```rust
+#[account]
+pub struct TribalResonance {
+    pub btc_completions: u64,       // Completions from BTC-native wallets
+    pub eth_completions: u64,       // Completions from ETH-native wallets
+    pub unified_completions: u64,   // Completions from multi-chain wallets
+    pub convergence_coefficient: u16, // 0-1000, measure of tribal unity
+}
+
+impl TribalResonance {
+    pub fn record_convergence(
+        &mut self,
+        is_btc_holder: bool,
+        is_eth_holder: bool,
+    ) -> u64 {
+        let base_resonance = 100u64;
+
+        match (is_btc_holder, is_eth_holder) {
+            (true, true) => {
+                // The handshake: both tribes in one wallet
+                self.unified_completions += 1;
+                self.convergence_coefficient = self.convergence_coefficient.saturating_add(10);
+                base_resonance * 3 // Triple resonance for unity
+            },
+            (true, false) => {
+                self.btc_completions += 1;
+                base_resonance
+            },
+            (false, true) => {
+                self.eth_completions += 1;
+                base_resonance
+            },
+            (false, false) => {
+                // Chain-agnostic: the purest form
+                base_resonance * 2
+            }
+        }
+    }
+}
+```
+
+### LAYER 2: QPoP (Memetic Propagation)
+
+**Core**: Measuring how MoonParty completions spread across tribal boundaries.
+**Insight**: The best completions are ones that both communities remix.
+**Viral Coefficient**: Increases when a completion is referenced by holders from the "opposing" tribe.
+
+```rust
+#[account]
+pub struct MoonPartyMeme {
+    pub completion_hash: [u8; 32],
+    pub original_tribe: TribalOrigin,
+    pub cross_tribal_remixes: u64,  // Times remixed by other tribe
+    pub lunar_resonance: u64,       // Overall propagation score
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum TribalOrigin {
+    Bitcoin,
+    Ethereum,
+    Unified,
+    ChainAgnostic,
+}
+
+impl MoonPartyMeme {
+    pub fn record_remix(&mut self, remixer_tribe: TribalOrigin) {
+        // Cross-tribal remix = maximum viral potential
+        if remixer_tribe != self.original_tribe {
+            self.cross_tribal_remixes += 1;
+            self.lunar_resonance += 100;
+        } else {
+            self.lunar_resonance += 10;
+        }
+    }
+}
+```
+
+### LAYER 3: The Constraint Engine (Proof-of-Party)
+
+**Core**: The gap-bridging mechanism specific to MoonParty.
+**Mechanism**: Complete the sentence. The hash must contain patterns of unity.
+**Target Patterns**: "65" (the ratio) or tribal unity markers.
+
+```rust
+pub const MOONPARTY_PROMPTS: &[&str] = &[
+    "MoonParty: A big party on the moon where even BTC and ETH ______",
+    "At the MoonParty, Satoshi and Vitalik finally ______",
+    "The lunar DJ dropped a beat that made maxis ______",
+    "In zero gravity, all chains ______",
+    "BTC whispered to ETH: 'We should have ______ sooner'",
+];
+
+pub fn bridge_moonparty_gap(
+    ctx: Context<BridgeMoonParty>,
+    completion: String,
+    salt: u64,
+) -> Result<()> {
+    let fragment = &ctx.accounts.kernel_seed;
+
+    // Combine fragment + completion
+    let combined = format!("{}{}", fragment.fragment_data, completion);
+
+    let mut hasher = Keccak256::new();
+    hasher.update(combined.as_bytes());
+    hasher.update(&salt.to_le_bytes());
+    let hash = hasher.finalize();
+    let hash_hex = hex::encode(hash);
+
+    // Unity patterns unlock rewards
+    let reward = if hash_hex.contains("420") {
+        // Lunar resonance achieved
+        4200
+    } else if hash_hex.contains("65") {
+        // Standard MEMEk pattern
+        650
+    } else {
+        return err!(MoonPartyError::NoVibesDetected);
+    };
+
+    // Mint to the party-goer
+    mint_tokens(ctx, reward)?;
+
+    emit!(PartyEvent {
+        attendee: ctx.accounts.user.key(),
+        completion,
+        reward,
+        timestamp: Clock::get()?.unix_timestamp,
+    });
+
+    Ok(())
+}
+```
+
+### LAYER 4: Evolutionary Recomposition (The Afterparty)
+
+**Core**: As more gaps are bridged, the party evolves.
+**Logic**: The dominant completion style shapes the next epoch's prompts.
+**Mechanic**: If unity-themed completions dominate, new prompts become more reconciliatory.
+
+```rust
+#[account]
+pub struct PartyEvolution {
+    pub current_epoch: u64,
+    pub dominant_vibe: String,          // e.g., "Reconciliation", "Celebration", "Transcendence"
+    pub total_attendees: u64,
+    pub peak_convergence: u64,          // Highest tribal_convergence achieved
+}
+
+pub fn evolve_party(ctx: Context<EvolveParty>) -> Result<()> {
+    let state = &mut ctx.accounts.party_evolution;
+    let resonance = &ctx.accounts.tribal_resonance;
+
+    state.current_epoch += 1;
+
+    // Determine dominant vibe based on participation patterns
+    if resonance.unified_completions > resonance.btc_completions + resonance.eth_completions {
+        state.dominant_vibe = "Transcendence".to_string();
+    } else if resonance.convergence_coefficient > 500 {
+        state.dominant_vibe = "Reconciliation".to_string();
+    } else {
+        state.dominant_vibe = "Celebration".to_string();
+    }
+
+    emit!(PartyEvolved {
+        epoch: state.current_epoch,
+        vibe: state.dominant_vibe.clone(),
+        message: "The party continues. The moon remembers.".to_string(),
+    });
+
+    Ok(())
+}
+```
+
+### LAYER 5: Meta-Program Interface (The Invitation)
+
+**Core**: Other protocols can request MoonParty fragments for their own communities.
+**Use Case**: A cross-chain bridge wants to gamify its UX. It embeds a MoonParty prompt. Users complete the meme to unlock bridging.
+
+```rust
+pub trait MoonPartySubstrate {
+    /// Request a random MoonParty prompt
+    fn request_party_prompt(&self) -> Result<String>;
+
+    /// Submit a completion, returns reward amount if valid
+    fn submit_party_completion(
+        &self,
+        prompt_id: u64,
+        completion: String,
+        tribal_affiliation: TribalOrigin,
+    ) -> Result<u64>;
+
+    /// Check if an address attended the party
+    fn has_attended(&self, attendee: Pubkey) -> bool;
+}
+```
+
+## On-Chain Genesis Record
+
+**Fragment**: MoonParty
+**Deployed**: 2026-01-17
+**Network**: X1 Mainnet
+**Kernel Seed**: `8QkacSiBofgH5aULiJLE5nQA34mBZv7mW995LZUFfCZn`
+**Evolution State**: `7rJbJp21wb9VbY3wvT2V6RLYyVfB5W9TovJmsCQKuPZe`
+**Genesis TX**: `28DEFwb2C3hfhzixuXirR5Je77587B1uURgCRVsVU64wZGeoNtKcqcCocAUwKKbBRyWPGP8Nkn9xnvUQWifAoLr5`
+
+## Token Manifestation
+
+### X1 Mainnet
+**Token Mint**: `BYuhFXADPSeEgz9ibpcywTqFEsqVu5Fn1FEqECMR7hKp`
+**Explorer**: https://explorer.mainnet.x1.xyz/address/BYuhFXADPSeEgz9ibpcywTqFEsqVu5Fn1FEqECMR7hKp
+
+### Solana (pump.fun)
+**Token**: `5F9PBt7DoFMRjrjRB8DSgY8b7bTp1qYRq2mUoq2zpump`
+**pump.fun**: https://pump.fun/coin/5F9PBt7DoFMRjrjRB8DSgY8b7bTp1qYRq2mUoq2zpump
+
+**Cross-Chain Presence**: MoonParty exists across X1 and Solana, embodying the tribal unity it represents—BTC-aligned (X1) and ETH-aligned (Solana) ecosystems converging under the same memetic banner.
+
+## IPFS Deployment
+
+**Directory CID**: `bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce`
+
+| Asset | URI |
+|-------|-----|
+| Interactive Artifact | `ipfs://bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce/index.html` |
+| Composition Spec | `ipfs://bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce/MoonParty.ic` |
+| Metadata JSON | `ipfs://bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce/metadata.json` |
+
+**Gateway URLs**:
+- Artifact: https://bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce.ipfs.w3s.link/
+- Spec: https://bafybeig7smq32rk5llmzixllimpbpwywpccplu3dxuognjewl3wobl3wce.ipfs.w3s.link/MoonParty.ic
+
+## Execution Guidance
+
+### For the Protocol (The Venue)
+
+1.  **Open the Doors**: The kernel is active. Gaps await bridging.
+2.  **Track Convergence**: Monitor `tribal_resonance` for cross-chain participation.
+3.  **Evolve the Vibe**: Call `evolve_party` when convergence milestones are hit.
+4.  **Spread the Invitation**: Expose the meta-interface for other protocols to embed.
+
+### For the Co-Creator (The Party-Goer)
+
+You are not holding a token. You are **attending a party**.
+
+-   **Don't pick a side.** The moon has no sides.
+-   **Complete the thought.** "BTC and ETH ______" — what did they do?
+-   **Bring others.** The party grows through invitation.
+-   **Remember.** What happens at MoonParty stays on-chain forever.
+
+## Coherence Seal
+
+This composition translates tribal reconciliation into executable XPL logic.
+
+-   **Maximalism** → `TribalOrigin` (Contextual Identity)
+-   **Convergence** → `tribal_convergence` (Unity Metric)
+-   **Party** → `bridge_moonparty_gap` (Participation Protocol)
+
+**τₘ = 8.21** | The tribes linked up. The chain remembers.
+
+---
+
+*"On the moon, we are all degens."*
+
+**END OF INTELLIGENT COMPOSITION**
