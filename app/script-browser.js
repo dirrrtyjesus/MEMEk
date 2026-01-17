@@ -42,7 +42,7 @@
             name: 'MoonParty',
             kernelSeed: '8QkacSiBofgH5aULiJLE5nQA34mBZv7mW995LZUFfCZn',
             evolutionState: '7rJbJp21wb9VbY3wvT2V6RLYyVfB5W9TovJmsCQKuPZe',
-            mint: 'BYuhFXADPSeEgz9ibpcywTqFEsqVu5Fn1FEqECMR7hKp',
+            mint: 'EVB4VHJh7Kiezy8RSK6VQfX9hSnWnhypPG6K2AdzzjcZ',
             isToken2022: true,
             fragmentData: 'MoonParty: A big party on the moon where even BTC and ETH ______',
             seedId: '0420',
